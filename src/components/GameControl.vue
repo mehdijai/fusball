@@ -103,12 +103,20 @@ watch(
   flex-direction: column;
   gap: 20px;
   min-width: 300px;
+  height: 80%;
+  overflow-y: auto;
 
   div {
     h2 {
       font-size: 1rem;
       font-weight: 700;
       margin: 0;
+    }
+    h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 0;
+      color: gray;
     }
     hr {
       border-color: #d8d8d8;

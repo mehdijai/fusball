@@ -6,6 +6,7 @@ import type { TeamPlayer } from "../types/game.type";
 import { usePlayStore } from "../store/play.store";
 import { storeToRefs } from "pinia";
 import GameControl from "./GameControl.vue";
+import JerseyControl from "./JerseyControl.vue";
 
 const playStore = usePlayStore();
 const { gamePlaySettings } = storeToRefs(playStore);
@@ -13,12 +14,12 @@ const { gamePlaySettings } = storeToRefs(playStore);
 const team = computed<TeamPlayer[]>(
   () => gamePlaySettings.value.gameSettings.selectedFormation.players ?? []
 );
-// const team = computed<TeamPlayer[]>(() => []);
 </script>
 
 <template>
   <main class="game-plan">
-    <Pitch>
+    <JerseyControl />
+    <Pitch class="game-plan_pitch">
       <template v-for="player in team" :key="player.number">
         <Jersey :player="player" />
       </template>
@@ -29,9 +30,12 @@ const team = computed<TeamPlayer[]>(
 
 <style lang="scss">
 .game-plan {
-  height: 600px;
   width: fit-content;
   display: flex;
   gap: 20px;
+
+  .game-plan_pitch {
+    height: 600px;
+  }
 }
 </style>

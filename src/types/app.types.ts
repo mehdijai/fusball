@@ -6,7 +6,18 @@ export interface GamePlaySettings {
     showName: boolean;
     showPosition: boolean;
     showCaptainBadge: boolean;
-    colorScheme: string;
+    colorScheme: {
+      main: {
+        bg: string;
+        fore: string;
+        border: string;
+      };
+      gk: {
+        bg: string;
+        fore: string;
+        border: string;
+      };
+    };
   };
   pitchSettings: {
     showGuides: boolean;

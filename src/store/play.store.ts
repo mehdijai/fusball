@@ -12,7 +12,18 @@ export const usePlayStore = defineStore(
         showName: true,
         showPosition: true,
         showCaptainBadge: true,
-        colorScheme: "",
+        colorScheme: {
+          main: {
+            bg: "#E6E6E6",
+            fore: "#333333",
+            border: "#333333",
+          },
+          gk: {
+            bg: "#e64747",
+            fore: "#fff",
+            border: "#333333",
+          },
+        },
       },
       pitchSettings: {
         showGuides: false,
@@ -24,9 +35,9 @@ export const usePlayStore = defineStore(
 
     return { gamePlaySettings };
   },
-  {
-    persist: {
-      storage: localStorage,
-    },
-  }
+  // {
+  //   persist: {
+  //     storage: localStorage,
+  //   },
+  // }
 );
