@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed } from "vue";
 import Jersey from "./Jersey.vue";
 import Pitch from "./Pitch.vue";
 import type { TeamPlayer } from "../types/game.type";
@@ -10,9 +10,10 @@ import GameControl from "./GameControl.vue";
 const playStore = usePlayStore();
 const { gamePlaySettings } = storeToRefs(playStore);
 
-const team = ref<TeamPlayer[]>(
-  gamePlaySettings.value.gameSettings.selectedFormation.players ?? []
+const team = computed<TeamPlayer[]>(
+  () => gamePlaySettings.value.gameSettings.selectedFormation.players ?? []
 );
+// const team = computed<TeamPlayer[]>(() => []);
 </script>
 
 <template>

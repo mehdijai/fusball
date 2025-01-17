@@ -1,9 +1,32 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { usePlayStore } from "../store/play.store";
+import { formations } from "../data/formations.data";
+import { computed, ref, watch } from "vue";
 
 const playStore = usePlayStore();
 const { gamePlaySettings } = storeToRefs(playStore);
+
+const selectedFormation = ref(
+  formations.find(
+    (formation) =>
+      formation.name ===
+      gamePlaySettings.value.gameSettings.selectedFormation.name
+  )?.name
+);
+
+const formationList = computed(() => formations.map((f) => f.name));
+
+watch(
+  () => selectedFormation.value,
+  (newVal) => {
+    const match = formations.find((f) => f.name === newVal);
+    if (match) {
+      gamePlaySettings.value.gameSettings.selectedFormation = match;
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <template>
@@ -61,12 +84,11 @@ const { gamePlaySettings } = storeToRefs(playStore);
       <hr />
       <fieldset class="block">
         <label for="selectedFormation">Selected Formation</label>
-        <input
-          type="text"
-          readonly
-          v-model="gamePlaySettings.gameSettings.selectedFormation.name"
-          id="selectedFormation"
-        />
+        <select v-model="selectedFormation" id="selectedFormation">
+          <template v-for="formation in formationList" :key="formation">
+            <option :value="formation">{{ formation }}</option>
+          </template>
+        </select>
       </fieldset>
     </div>
   </div>

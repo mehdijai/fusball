@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { GamePlaySettings } from "../types/app.types";
-import { defaultFormation } from "../data/formations.data";
+import { formations } from "../data/formations.data";
 
 export const usePlayStore = defineStore(
   "play-store",
@@ -18,7 +18,7 @@ export const usePlayStore = defineStore(
         showGuides: false,
       },
       gameSettings: {
-        selectedFormation: defaultFormation,
+        selectedFormation: formations[0],
       },
     });
 

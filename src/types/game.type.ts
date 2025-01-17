@@ -22,3 +22,8 @@ export type TeamPlayer = {
   yPos: number;
   isPixel?: boolean;
 };
+
+export type Formation = {
+  name: string;
+  players: TeamPlayer[];
+};

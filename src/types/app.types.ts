@@ -1,4 +1,4 @@
-import type { TeamPlayer } from "./game.type";
+import type { Formation } from "./game.type";
 
 export interface GamePlaySettings {
   playerSettings: {
@@ -12,9 +12,6 @@ export interface GamePlaySettings {
     showGuides: boolean;
   };
   gameSettings: {
-    selectedFormation: {
-      name: string;
-      players: TeamPlayer[];
-    };
+    selectedFormation: Formation;
   };
 }
