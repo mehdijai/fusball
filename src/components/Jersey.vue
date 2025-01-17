@@ -36,8 +36,8 @@ const displayPlayerPosition = computed(
 
 const displayPlayerInfo = computed(
   () =>
-    displayPlayerName.value === true &&
-    displayPlayerCaptain.value === true &&
+    displayPlayerName.value === true ||
+    displayPlayerCaptain.value === true ||
     displayPlayerPosition.value === true
 );
 
