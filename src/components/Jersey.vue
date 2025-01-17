@@ -116,7 +116,10 @@ watch(
       </g>
     </svg>
 
-    <div class="data" v-if="displayPlayerInfo">
+    <div
+      v-if="displayPlayerInfo"
+      :class="{ data: true, bg: displayPlayerName }"
+    >
       <div
         v-if="displayPlayerCaptain && player.isCaptain"
         class="captain-badge"
@@ -146,15 +149,18 @@ watch(
   }
   .data {
     margin-top: 5px;
-    min-width: 100%;
     width: fit-content;
-    background-color: rgba(50, 50, 50, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
     border-radius: 3px;
     overflow: hidden;
+
+    &.bg {
+      background-color: rgba(50, 50, 50, 0.8);
+      min-width: 100%;
+      gap: 10px;
+    }
 
     .captain-badge {
       font-size: 0.6rem;
