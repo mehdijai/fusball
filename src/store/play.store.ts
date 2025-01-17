@@ -35,9 +35,9 @@ export const usePlayStore = defineStore(
 
     return { gamePlaySettings };
   },
-  // {
-  //   persist: {
-  //     storage: localStorage,
-  //   },
-  // }
+  {
+    persist: {
+      storage: localStorage,
+    },
+  }
 );

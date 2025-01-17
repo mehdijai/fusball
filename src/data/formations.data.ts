@@ -13,7 +13,7 @@ export const formations: Formation[] = [
       },
       {
         name: "Maldini",
-        position: "RB",
+        position: "LB",
         number: 3,
         isCaptain: true,
         xPos: 15,
@@ -21,7 +21,7 @@ export const formations: Formation[] = [
       },
       {
         name: "Cafu",
-        position: "LB",
+        position: "RB",
         number: 2,
         xPos: 85,
         yPos: 90,
@@ -89,7 +89,7 @@ export const formations: Formation[] = [
       },
       {
         name: "Maldini",
-        position: "RB",
+        position: "LB",
         number: 3,
         isCaptain: true,
         xPos: 15,
@@ -97,7 +97,7 @@ export const formations: Formation[] = [
       },
       {
         name: "Cafu",
-        position: "LB",
+        position: "RB",
         number: 2,
         xPos: 85,
         yPos: 85,
