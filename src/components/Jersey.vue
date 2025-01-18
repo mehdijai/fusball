@@ -3,13 +3,14 @@ import { computed, onMounted, ref, watch } from "vue";
 import type { TeamPlayer } from "../types/game.type";
 import { usePlayStore } from "../store/play.store";
 import { storeToRefs } from "pinia";
-import Color from "color";
+import { getJerseyColor } from "../utils/jersey-color";
 
 const playStore = usePlayStore();
 const { gamePlaySettings } = storeToRefs(playStore);
 
 const props = defineProps<{
   player: TeamPlayer;
+  editable?: boolean;
 }>();
 
 const position = computed(() => ({
@@ -18,34 +19,10 @@ const position = computed(() => ({
 }));
 
 const colorSet = computed(() =>
-  isKeeper.value
-    ? {
-        border: gamePlaySettings.value.playerSettings.colorScheme.gk.border,
-        collar: Color(
-          gamePlaySettings.value.playerSettings.colorScheme.gk.bg
-        )
-          .darken(0.2)
-          .hex()
-          .toString(),
-        fill: gamePlaySettings.value.playerSettings.colorScheme.gk.bg,
-        number: gamePlaySettings.value.playerSettings.colorScheme.gk.fore,
-        collarStroke: gamePlaySettings.value.playerSettings.colorScheme.gk.fore,
-        emblem: gamePlaySettings.value.playerSettings.colorScheme.gk.fore,
-      }
-    : {
-        border: gamePlaySettings.value.playerSettings.colorScheme.main.border,
-        collar: Color(
-          gamePlaySettings.value.playerSettings.colorScheme.main.bg
-        )
-          .darken(0.2)
-          .hex()
-          .toString(),
-        fill: gamePlaySettings.value.playerSettings.colorScheme.main.bg,
-        number: gamePlaySettings.value.playerSettings.colorScheme.main.fore,
-        collarStroke:
-          gamePlaySettings.value.playerSettings.colorScheme.main.fore,
-        emblem: gamePlaySettings.value.playerSettings.colorScheme.main.fore,
-      }
+  getJerseyColor(
+    isKeeper.value,
+    gamePlaySettings.value.playerSettings.colorScheme
+  )
 );
 
 const isPixel = computed(() => props.player.isPixel ?? false);
@@ -73,7 +50,13 @@ const displayPlayerInfo = computed(
     displayPlayerPosition.value === true
 );
 
+const isEditable = computed(() => props.editable ?? false);
+
 const jerseyRef = ref<SVGElement | null>(null);
+
+defineExpose({
+  jerseyRef,
+});
 
 function setPosition(x: number, y: number) {
   if (!jerseyRef.value) return;
@@ -94,7 +77,12 @@ watch(
 </script>
 
 <template>
-  <div class="jersey-wrapper" ref="jerseyRef">
+  <div
+    class="jersey-wrapper"
+    :class="{ editable: isEditable }"
+    ref="jerseyRef"
+    :id="player.number.toString()"
+  >
     <svg
       class="jersey"
       :id="id"
@@ -175,9 +163,15 @@ watch(
   flex-direction: column;
   align-items: center;
   user-select: none;
+  &.editable {
+    &:hover {
+      cursor: grab;
+    }
+  }
   .jersey {
     width: 100%;
     height: auto;
+    pointer-events: none;
   }
   .data {
     margin-top: 5px;

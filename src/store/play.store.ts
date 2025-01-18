@@ -2,10 +2,13 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { GamePlaySettings } from "../types/app.types";
 import { formations } from "../data/formations.data";
+import type { Formation } from "../types/game.type";
+import { useAppStore } from "./app.store";
 
 export const usePlayStore = defineStore(
   "play-store",
   () => {
+    const { switchRoute } = useAppStore();
     const gamePlaySettings = ref<GamePlaySettings>({
       playerSettings: {
         showNumber: true,
@@ -20,7 +23,7 @@ export const usePlayStore = defineStore(
           },
           gk: {
             bg: "#e64747",
-            fore: "#fff",
+            fore: "#ffffff",
             border: "#333333",
           },
         },
@@ -29,11 +32,18 @@ export const usePlayStore = defineStore(
         showGuides: false,
       },
       gameSettings: {
+        formations: formations,
         selectedFormation: formations[0],
       },
     });
 
-    return { gamePlaySettings };
+    function addNewFormation(newFormation: Formation) {
+      gamePlaySettings.value.gameSettings.formations.push(newFormation);
+      gamePlaySettings.value.gameSettings.selectedFormation = newFormation;
+      switchRoute("game-plan");
+    }
+
+    return { gamePlaySettings, addNewFormation };
   },
   {
     persist: {

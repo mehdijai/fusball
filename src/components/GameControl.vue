@@ -1,26 +1,31 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { usePlayStore } from "../store/play.store";
-import { formations } from "../data/formations.data";
 import { computed, ref, watch } from "vue";
+import { useAppStore } from "../store/app.store";
 
+const { switchRoute } = useAppStore();
 const playStore = usePlayStore();
 const { gamePlaySettings } = storeToRefs(playStore);
 
 const selectedFormation = ref(
-  formations.find(
+  gamePlaySettings.value.gameSettings.formations.find(
     (formation) =>
       formation.name ===
       gamePlaySettings.value.gameSettings.selectedFormation.name
   )?.name
 );
 
-const formationList = computed(() => formations.map((f) => f.name));
+const formationList = computed(() =>
+  gamePlaySettings.value.gameSettings.formations.map((f) => f.name)
+);
 
 watch(
   () => selectedFormation.value,
   (newVal) => {
-    const match = formations.find((f) => f.name === newVal);
+    const match = gamePlaySettings.value.gameSettings.formations.find(
+      (f) => f.name === newVal
+    );
     if (match) {
       gamePlaySettings.value.gameSettings.selectedFormation = match;
     }
@@ -89,6 +94,11 @@ watch(
             <option :value="formation">{{ formation }}</option>
           </template>
         </select>
+      </fieldset>
+      <fieldset class="block">
+        <button @click="switchRoute('plan-editor')">
+          Create custom formation
+        </button>
       </fieldset>
     </div>
   </div>

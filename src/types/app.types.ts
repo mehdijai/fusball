@@ -1,28 +1,31 @@
 import type { Formation } from "./game.type";
 
-export interface GamePlaySettings {
+export type JerseyColorScheme = {
+  main: {
+    bg: string;
+    fore: string;
+    border: string;
+  };
+  gk: {
+    bg: string;
+    fore: string;
+    border: string;
+  };
+};
+
+export type GamePlaySettings = {
   playerSettings: {
     showNumber: boolean;
     showName: boolean;
     showPosition: boolean;
     showCaptainBadge: boolean;
-    colorScheme: {
-      main: {
-        bg: string;
-        fore: string;
-        border: string;
-      };
-      gk: {
-        bg: string;
-        fore: string;
-        border: string;
-      };
-    };
+    colorScheme: JerseyColorScheme;
   };
   pitchSettings: {
     showGuides: boolean;
   };
   gameSettings: {
+    formations: Formation[];
     selectedFormation: Formation;
   };
-}
+};

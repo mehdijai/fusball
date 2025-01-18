@@ -24,6 +24,11 @@ watch(
 const fieldRef = ref<SVGRectElement | null>(null);
 const teamContainer = ref<HTMLDivElement | null>(null);
 
+defineExpose({
+  fieldRef,
+  teamContainer,
+});
+
 const pitchGuides = ref<HTMLDivElement | null>(null);
 
 function hideGuides() {
@@ -326,8 +331,8 @@ onMounted(() => {
     </svg>
     <div class="team-container" ref="teamContainer">
       <div class="team-members">
-        <div class="guides-container">
-          <div class="guides" ref="pitchGuides" />
+        <div class="guides-container" style="pointer-events: none">
+          <div class="guides" ref="pitchGuides" style="pointer-events: none" />
         </div>
         <slot />
       </div>
