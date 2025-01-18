@@ -13,9 +13,11 @@ const props = defineProps<{
   editable?: boolean;
 }>();
 
+const _player = computed(() => props.player);
+
 const position = computed(() => ({
-  x: props.player.xPos,
-  y: props.player.yPos,
+  x: _player.value.xPos,
+  y: _player.value.yPos,
 }));
 
 const colorSet = computed(() =>
@@ -25,10 +27,9 @@ const colorSet = computed(() =>
   )
 );
 
-const isPixel = computed(() => props.player.isPixel ?? false);
+const isPixel = computed(() => _player.value.isPixel ?? false);
 
-const isKeeper = computed(() => props.player.position === "GK");
-const id = computed(() => props.player.position + "-" + props.player.number);
+const isKeeper = computed(() => _player.value.position === "GK");
 
 const displayPlayerName = computed(
   () => gamePlaySettings.value.playerSettings.showName ?? false
@@ -77,16 +78,9 @@ watch(
 </script>
 
 <template>
-  <div
-    class="jersey-wrapper"
-    :class="{ editable: isEditable }"
-    ref="jerseyRef"
-    :id="player.number.toString()"
-  >
+  <div class="jersey-wrapper" :class="{ editable: isEditable }" ref="jerseyRef">
     <svg
       class="jersey"
-      :id="id"
-      :name="player.name"
       width="252"
       height="304"
       viewBox="0 0 252 304"
@@ -120,7 +114,7 @@ watch(
             text-anchor="middle"
             style="font-family: inherit; font-size: 60px; font-weight: 700"
           >
-            {{ player.number }}
+            {{ _player.number }}
           </text>
         </g>
         <path
@@ -141,14 +135,14 @@ watch(
       :class="{ data: true, bg: displayPlayerName }"
     >
       <div
-        v-if="displayPlayerCaptain && player.isCaptain"
+        v-if="displayPlayerCaptain && _player.isCaptain"
         class="captain-badge"
       >
         <span>C</span>
       </div>
-      <span v-if="displayPlayerName" class="name">{{ player.name }}</span>
+      <span v-if="displayPlayerName" class="name">{{ _player.name }}</span>
       <div v-if="displayPlayerPosition" class="position-badge">
-        <span>{{ player.position }}</span>
+        <span>{{ _player.position }}</span>
       </div>
     </div>
   </div>
@@ -167,6 +161,9 @@ watch(
     &:hover {
       cursor: grab;
     }
+  }
+  &.selected {
+    background-color: violet;
   }
   .jersey {
     width: 100%;

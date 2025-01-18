@@ -6,11 +6,16 @@ import {
   ref,
   toRaw,
   useTemplateRef,
+  watch,
   type ComponentPublicInstance,
 } from "vue";
 import Jersey from "./Jersey.vue";
 import Pitch from "./Pitch.vue";
-import type { Formation } from "../types/game.type";
+import {
+  PositionNames,
+  type Formation,
+  type TeamPlayer,
+} from "../types/game.type";
 import { usePlayStore } from "../store/play.store";
 import { storeToRefs } from "pinia";
 import { useAppStore } from "../store/app.store";
@@ -31,36 +36,42 @@ const gamePitch = useTemplateRef("gamePitch");
 
 type ExposedPlayer = ComponentPublicInstance<{
   jerseyRef: HTMLDivElement | null;
+  player: TeamPlayer;
 }>;
 
 const players = reactive<ExposedPlayer[]>([]);
 
-let grabbedEl: HTMLDivElement | null = null;
+function setJerseyRef(el: ExposedPlayer) {
+  players.push(el);
+}
 
-function setGrabbedEl(jerseyRef: HTMLDivElement | null) {
+const grabbedEl = ref<ExposedPlayer | null>(null);
+
+function setGrabbedEl(player: ExposedPlayer | null) {
   return (e: Event) => {
     e.stopPropagation();
-    if (grabbedEl === null) {
-      grabbedEl = jerseyRef;
+    if (grabbedEl.value === null) {
+      grabbedEl.value = player;
     }
   };
 }
 
 function unsetGrabbedEl(e: Event) {
   e.stopPropagation();
-  if (grabbedEl) grabbedEl.style.cursor = "grab";
-  grabbedEl = null;
+  if (grabbedEl.value?.jerseyRef)
+    grabbedEl.value.jerseyRef.style.cursor = "grab";
+  grabbedEl.value = null;
 }
 
 function movementsHandler(field: HTMLDivElement) {
   return (e: MouseEvent) => {
-    if (grabbedEl !== null) {
+    if (grabbedEl.value?.jerseyRef) {
       const bBox = field.getBoundingClientRect();
       const dx = e.clientX - bBox.x;
       const dy = e.clientY - bBox.y;
-      grabbedEl.style.cursor = "grabbing";
+      grabbedEl.value.jerseyRef.style.cursor = "grabbing";
       const match = newFormationPayload.value.players.find(
-        (p) => p.number === Number(grabbedEl!.id)
+        (p) => p.number === grabbedEl.value?.$props.player.number
       );
       if (match) {
         match.isPixel = true;
@@ -73,6 +84,87 @@ function movementsHandler(field: HTMLDivElement) {
 
 const listeners: Function[] = [];
 
+const selectedPlayer = ref<ExposedPlayer | null>(null);
+const selectedPlayerData = ref<TeamPlayer | null>(null);
+
+watch(
+  () => selectedPlayer.value,
+  (to) => {
+    if (to !== null) {
+      selectedPlayerData.value = structuredClone(toRaw(to.$props.player));
+    } else {
+      selectedPlayerData.value = null;
+    }
+  }
+);
+
+function deleteSelectedPlayer() {
+  if (selectedPlayer.value) {
+    newFormationPayload.value.players =
+      newFormationPayload.value.players.filter(
+        (p) => p.number !== selectedPlayer.value!.$props.player.number
+      );
+
+    selectedPlayer.value = null;
+  }
+}
+
+function saveSelectedPlayer() {
+  if (!selectedPlayerData.value) return;
+
+  const match = newFormationPayload.value.players.find(
+    (p) => p.number === selectedPlayer.value?.$props.player?.number
+  );
+
+  if (match) {
+    if (match.name !== selectedPlayerData.value.name)
+      match.name = selectedPlayerData.value.name;
+    if (match.number !== selectedPlayerData.value.number.toString()) {
+      if (
+        newFormationPayload.value.players.some(
+          (p) => p.number === selectedPlayerData.value?.number
+        )
+      ) {
+        alert("Number already exists");
+        return;
+      }
+      match.number = selectedPlayerData.value.number.toString();
+    }
+    if (match.position !== selectedPlayerData.value.position)
+      match.position = selectedPlayerData.value.position;
+    if (match.isCaptain !== selectedPlayerData.value.isCaptain) {
+      if (selectedPlayerData.value.isCaptain === true) {
+        newFormationPayload.value.players.forEach((p) => (p.isCaptain = false));
+      }
+      match.isCaptain = selectedPlayerData.value.isCaptain;
+    }
+  }
+
+  selectedPlayer.value?.jerseyRef?.classList.remove("selected");
+  selectedPlayer.value = null;
+}
+
+function handleJerseyClick(player: ExposedPlayer) {
+  return () => {
+    if (grabbedEl.value !== null) return;
+    document
+      .querySelector(".jersey-wrapper.selected")
+      ?.classList.remove("selected");
+    if (selectedPlayer.value === null) {
+      selectedPlayer.value = player;
+      player.jerseyRef?.classList.add("selected");
+    } else if (
+      selectedPlayer.value.$props.player.number === player.$props.player.number
+    ) {
+      selectedPlayer.value = null;
+      player.jerseyRef?.classList.remove("selected");
+    } else {
+      selectedPlayer.value = player;
+      player.jerseyRef?.classList.add("selected");
+    }
+  };
+}
+
 onMounted(() => {
   if (!gamePitch.value || !(players.length > 0)) return;
 
@@ -82,23 +174,23 @@ onMounted(() => {
 
   players.forEach((player) => {
     if (player.jerseyRef) {
-      player.jerseyRef.addEventListener(
-        "mousedown",
-        setGrabbedEl(player.jerseyRef)
-      );
+      player.jerseyRef.addEventListener("mousedown", setGrabbedEl(player));
       listeners.push(() =>
-        player.jerseyRef!.removeEventListener(
-          "mousedown",
-          setGrabbedEl(player.jerseyRef)
-        )
+        player.jerseyRef?.removeEventListener("mousedown", setGrabbedEl(player))
       );
       player.jerseyRef.addEventListener("mouseup", unsetGrabbedEl);
       listeners.push(() =>
-        player.jerseyRef!.removeEventListener("mouseup", unsetGrabbedEl)
+        player.jerseyRef?.removeEventListener("mouseup", unsetGrabbedEl)
+      );
+      player.jerseyRef.addEventListener("click", handleJerseyClick(player));
+      listeners.push(() =>
+        player.jerseyRef?.removeEventListener(
+          "click",
+          handleJerseyClick(player)
+        )
       );
     }
   });
-
   field.addEventListener("mousemove", movementsHandler(field));
   listeners.push(() =>
     field.removeEventListener("mousemove", movementsHandler(field))
@@ -120,6 +212,11 @@ function saveState() {
     return;
   }
 
+  if (newFormationPayload.value.players.every((p) => p.isCaptain === false)) {
+    alert("You must set at least one captain");
+    return;
+  }
+
   if (
     gamePlaySettings.value.gameSettings.formations.find(
       (f) => f.name === newFormationPayload.value.name
@@ -134,13 +231,59 @@ function saveState() {
 
 <template>
   <main class="game-plan">
+    <section class="actions">
+      <h2>Player Editor</h2>
+      <template v-if="selectedPlayerData">
+        <div>
+          <fieldset>
+            <label for="name">Name</label>
+            <input
+              type="text"
+              id="name"
+              v-model="selectedPlayerData.name"
+              placeholder="Player's Name"
+            />
+          </fieldset>
+          <fieldset>
+            <label for="number">Number</label>
+            <input
+              type="number"
+              id="number"
+              v-model="selectedPlayerData.number"
+              placeholder="Player's number"
+            />
+          </fieldset>
+          <fieldset class="inline">
+            <input
+              type="checkbox"
+              id="isCaptain"
+              v-model="selectedPlayerData.isCaptain"
+            />
+            <label for="isCaptain">Is Captain</label>
+          </fieldset>
+          <fieldset>
+            <label for="position">Position</label>
+            <select id="position" v-model="selectedPlayerData.position">
+              <template
+                v-for="positionName in PositionNames"
+                :key="positionName"
+              >
+                <option :value="positionName">{{ positionName }}</option>
+              </template>
+            </select>
+          </fieldset>
+          <button @click="saveSelectedPlayer">Save</button>
+          <button @click="deleteSelectedPlayer">Delete</button>
+        </div>
+      </template>
+      <template v-else>
+        <p>No player is selected yet</p>
+      </template>
+    </section>
     <Pitch class="game-plan_pitch" ref="gamePitch">
-      <template
-        v-for="player in newFormationPayload.players"
-        :key="player.number"
-      >
+      <template v-for="player in newFormationPayload.players" :key="player._id">
         <Jersey
-          :ref="(el) => players.push(el as ExposedPlayer)"
+          :ref="(el) => setJerseyRef(el as ExposedPlayer)"
           :player="player"
           editable
         />
@@ -201,12 +344,15 @@ function saveState() {
         gap: 5px;
         padding: 0;
 
-        align-items: flex-start;
-        flex-direction: column;
-        input {
-          width: 100%;
-          padding: 5px;
+        &:not(.inline) {
+          align-items: flex-start;
+          flex-direction: column;
+          input {
+            width: 100%;
+            padding: 5px;
+          }
         }
+
         label {
           font-size: 1rem;
           user-select: none;
